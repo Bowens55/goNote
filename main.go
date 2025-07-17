@@ -45,7 +45,7 @@ func (nm *NoteManager) listNotes() {
 
 	fmt.Println("id", "description") // TODO: do this better... lol
 	for i, note := range nm.Notes {
-		fmt.Println(i+1, note.Body)
+		fmt.Println(i+1, note.Body, note.Directory)
 	}
 }
 
