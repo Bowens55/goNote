@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -11,6 +12,7 @@ type NoteModel struct {
 
 type Note struct {
 	// title string dont think I want a title, I just want quick notes
+	ID        int
 	Body      string
 	Directory string
 	SavedAt   time.Time
@@ -41,6 +43,42 @@ func (m *NoteModel) Insert(body, directory string) (int, error) {
 	// The ID returned has the type int64, so we convert it to an int type
 	// before returning.
 	return int(id), nil
+}
+
+// func (m *NoteModel) getID(n int) {
+// 	pass
+// }
+
+func (m *NoteModel) List(n int) (Notes []Note, err error) {
+	stmt := `SELECT * FROM notes;`
+	var rows *sql.Rows
+	if n > 0 {
+		stmt += " LIMIT ?"
+		rows, err = m.DB.Query(stmt, n)
+		if err != nil {
+			fmt.Println("Unable to pull data from sql into note struct.", err)
+			return nil, err
+		}
+		defer rows.Close()
+	} else {
+		rows, err = m.DB.Query(stmt)
+		if err != nil {
+			fmt.Println("Unable to pull data from sql into note struct.", err)
+			return nil, err
+		}
+		defer rows.Close()
+	}
+
+	var note Note
+	for rows.Next() {
+		err = rows.Scan(&note.ID, &note.Body, &note.Directory, &note.SavedAt)
+		if err != nil {
+			fmt.Println("Unable to pull data from sql into note struct.", err)
+			return nil, err
+		}
+		Notes = append(Notes, note)
+	}
+	return
 }
 
 // // This will return a specific snippet based on its id.

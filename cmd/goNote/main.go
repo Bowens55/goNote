@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"goNote/internal/models"
 	"log"
 	"log/slog"
@@ -20,10 +21,10 @@ type application struct {
 }
 
 func main() {
-	var listFlag bool
+	var listFlag int
 
-	flag.BoolVar(&listFlag, "list", true, "Disable listing out notes by passing false to this flag.")
-	flag.BoolVar(&listFlag, "l", true, "Disable listing out notes by passing false to this flag.")
+	flag.IntVar(&listFlag, "list", 0, "List out n number of notes, if no number is passed, list all.")
+	flag.IntVar(&listFlag, "l", 0, "List out n number of notes, if no number is passed, list all.")
 	flag.Parse()
 
 	err := godotenv.Load()
@@ -47,8 +48,9 @@ func main() {
 	}
 
 	// Get note from command-line arguments
-	if len(os.Args) > 1 {
-		note := strings.Join(os.Args[1:], " ")
+	args := flag.Args()
+	if len(args) > 0 {
+		note := strings.Join(args, " ")
 		// Use note variable as needed, e.g.:
 		// app.NoteModel.Insert(note, "default", time.Now())
 
@@ -60,6 +62,29 @@ func main() {
 
 		if note != "" {
 			app.NoteModel.Insert(note, wd)
+		}
+	}
+	// TODO: make this better dont care rn.
+	// need to use something else since default for list flag is only
+	// used whenever the flag isn't passed at all.
+	// cleanup the if else...
+	if listFlag == 0 && flag.NFlag() == 1 {
+		// --list or -l was passed without a value
+		notes, err := app.NoteModel.List(0)
+		if err != nil {
+			fmt.Println(err)
+		}
+		for _, v := range notes {
+			fmt.Println(v)
+		}
+
+	} else if listFlag > 1 {
+		notes, err := app.NoteModel.List(0)
+		if err != nil {
+			fmt.Println(err)
+		}
+		for _, v := range notes {
+			fmt.Println(v)
 		}
 	}
 
