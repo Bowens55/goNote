@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"os"
+	"text/tabwriter"
 	"time"
 )
 
@@ -80,6 +82,20 @@ func (m *NoteModel) List(n int) (Notes []Note, err error) {
 		Notes = append(Notes, note)
 	}
 	return
+}
+
+// this might become formatNote depending on how we integrate fuzzy finder.
+func DisplayNote(notes []Note) {
+	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+	fmt.Fprintln(w, "ID\tNote\tDirectory\tDate")
+	for _, note := range notes {
+		fmt.Fprintf(w, "%d\t%s\t%s\t%s\n",
+			note.ID,
+			note.Body,
+			note.Directory,
+			note.SavedAt.Format("Jan 2, 2006 3:04 PM"))
+	}
+	w.Flush()
 }
 
 // // This will return a specific snippet based on its id.

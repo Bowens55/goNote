@@ -74,18 +74,14 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
-		for _, v := range notes {
-			fmt.Println(v)
-		}
+		models.DisplayNote(notes)
 
 	} else if listFlag >= 1 {
 		notes, err := app.NoteModel.List(listFlag)
 		if err != nil {
 			fmt.Println(err)
 		}
-		for _, v := range notes {
-			fmt.Println(v)
-		}
+		models.DisplayNote(notes)
 	}
 
 }
