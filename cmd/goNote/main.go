@@ -78,7 +78,7 @@ func main() {
 			fmt.Println(v)
 		}
 
-	} else if listFlag > 1 {
+	} else if listFlag >= 1 {
 		notes, err := app.NoteModel.List(listFlag)
 		if err != nil {
 			fmt.Println(err)
