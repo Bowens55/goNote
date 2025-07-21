@@ -50,10 +50,10 @@ func (m *NoteModel) Insert(body, directory string) (int, error) {
 // }
 
 func (m *NoteModel) List(n int) (Notes []Note, err error) {
-	stmt := `SELECT * FROM notes;`
+	stmt := `SELECT * FROM notes`
 	var rows *sql.Rows
 	if n > 0 {
-		stmt += " LIMIT ?"
+		stmt += " LIMIT ?;"
 		rows, err = m.DB.Query(stmt, n)
 		if err != nil {
 			fmt.Println("Unable to pull data from sql into note struct.", err)
@@ -61,6 +61,7 @@ func (m *NoteModel) List(n int) (Notes []Note, err error) {
 		}
 		defer rows.Close()
 	} else {
+		stmt += ";"
 		rows, err = m.DB.Query(stmt)
 		if err != nil {
 			fmt.Println("Unable to pull data from sql into note struct.", err)

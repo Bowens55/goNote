@@ -24,7 +24,7 @@ func main() {
 	var listFlag int
 
 	flag.IntVar(&listFlag, "list", 0, "List out n number of notes, if no number is passed, list all.")
-	flag.IntVar(&listFlag, "l", 0, "List out n number of notes, if no number is passed, list all.")
+	flag.IntVar(&listFlag, "l", 0, "List out n number of notes, if 0 is passed, list all.")
 	flag.Parse()
 
 	err := godotenv.Load()
@@ -79,7 +79,7 @@ func main() {
 		}
 
 	} else if listFlag > 1 {
-		notes, err := app.NoteModel.List(0)
+		notes, err := app.NoteModel.List(listFlag)
 		if err != nil {
 			fmt.Println(err)
 		}
