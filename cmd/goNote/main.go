@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"goNote/internal/models"
 	"log"
@@ -12,6 +11,7 @@ import (
 	"database/sql"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jessevdk/go-flags"
 	"github.com/joho/godotenv"
 )
 
@@ -20,14 +20,21 @@ type application struct {
 	NoteModel *models.NoteModel
 }
 
+type Opts struct {
+	List   int `short:"l" long:"list" description:"List out n number of notes. If n is not passed list all" optional:"true" optional-value:"-1"`
+	Delete int `short:"d" long:"delete" description:"Delete specific note based on ID field"`
+}
+
 func main() {
-	var listFlag int
+	var opts Opts
 
-	flag.IntVar(&listFlag, "list", 0, "List out n number of notes, if no number is passed, list all.")
-	flag.IntVar(&listFlag, "l", 0, "List out n number of notes, if 0 is passed, list all.")
-	flag.Parse()
+	args, err := flags.Parse(&opts)
+	if err != nil {
+		fmt.Println("unable to parse flags.")
+		os.Exit(1)
+	}
 
-	err := godotenv.Load()
+	err = godotenv.Load()
 	if err != nil {
 		log.Printf("Unable to load env file.")
 	}
@@ -48,41 +55,61 @@ func main() {
 	}
 
 	// Get note from command-line arguments
-	args := flag.Args()
-	if len(args) > 0 {
-		note := strings.Join(args, " ")
-		// Use note variable as needed, e.g.:
-		// app.NoteModel.Insert(note, "default", time.Now())
-
+	myNote := strings.TrimSpace(strings.Join(args, " "))
+	if myNote != "" {
 		wd, err := os.Getwd()
 		if err != nil {
 			logger.Error("Unable to get working dir.", "error", err)
 			os.Exit(1)
 		}
-
-		if note != "" {
-			app.NoteModel.Insert(note, wd)
-		}
+		app.NoteModel.Insert(myNote, wd)
 	}
+	var notes []models.Note
+	// list notes
+	if opts.List != 0 {
+		notes, _ = app.NoteModel.List(opts.List)
+	}
+
+	if notes != nil {
+		models.DisplayNote(notes)
+	}
+
+	// if len(args) > 0 {
+
+	// 	note := strings.Join(args, " ")
+	// 	// Use note variable as needed, e.g.:
+	// 	// app.NoteModel.Insert(note, "default", time.Now())
+
+	// 	wd, err := os.Getwd()
+	// 	if err != nil {
+	// 		logger.Error("Unable to get working dir.", "error", err)
+	// 		os.Exit(1)
+	// 	}
+
+	// 	if note != "" {
+	// 		app.NoteModel.Insert(note, wd)
+	// 	}
+	// }
+
 	// TODO: make this better dont care rn.
 	// need to use something else since default for list flag is only
 	// used whenever the flag isn't passed at all.
 	// cleanup the if else...
-	if listFlag == 0 && flag.NFlag() == 1 {
-		// --list or -l was passed without a value
-		notes, err := app.NoteModel.List(0)
-		if err != nil {
-			fmt.Println(err)
-		}
-		models.DisplayNote(notes)
+	// if listFlag == 0 && flag.NFlag() == 1 {
+	// 	// --list or -l was passed without a value
+	// 	notes, err := app.NoteModel.List(0)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
+	// 	models.DisplayNote(notes)
 
-	} else if listFlag >= 1 {
-		notes, err := app.NoteModel.List(listFlag)
-		if err != nil {
-			fmt.Println(err)
-		}
-		models.DisplayNote(notes)
-	}
+	// } else if listFlag >= 1 {
+	// 	notes, err := app.NoteModel.List(listFlag)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
+	// 	models.DisplayNote(notes)
+	// }
 
 }
 

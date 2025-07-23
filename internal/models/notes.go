@@ -84,16 +84,26 @@ func (m *NoteModel) List(n int) (Notes []Note, err error) {
 	return
 }
 
+func (m *NoteModel) Delete(id int) error {
+	stmt := "DELETE FROM note WHERE id = ?;"
+	_, err := m.DB.Exec(stmt, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // this might become formatNote depending on how we integrate fuzzy finder.
 func DisplayNote(notes []Note) {
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 	fmt.Fprintln(w, "ID\tNote\tDirectory\tDate")
 	for _, note := range notes {
+		localTime := note.SavedAt.In(time.Local)
 		fmt.Fprintf(w, "%d\t%s\t%s\t%s\n",
 			note.ID,
 			note.Body,
 			note.Directory,
-			note.SavedAt.Format("Jan 2, 2006 3:04 PM"))
+			localTime.Format("Jan 2, 2006 3:04 PM MST"))
 	}
 	w.Flush()
 }
