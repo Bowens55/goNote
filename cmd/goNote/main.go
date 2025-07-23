@@ -65,8 +65,8 @@ func main() {
 	}
 
 	var notes []models.Note
-	// list notes
-	if opts.List != 0 {
+	// list notes if -l or if we just run goNote
+	if opts.List != 0 || myNote == "" {
 		notes, _ = app.NoteModel.List(opts.List)
 	}
 
