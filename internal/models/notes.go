@@ -51,29 +51,33 @@ func (m *NoteModel) Insert(body, directory string) (int, error) {
 // 	pass
 // }
 
-func (m *NoteModel) List(n int) (Notes []Note, err error) {
-	stmt := `SELECT * FROM notes`
-	var rows *sql.Rows
-	if n > 0 {
-		stmt += " LIMIT ?;"
-		rows, err = m.DB.Query(stmt, n)
+func (m *NoteModel) List(n int, global bool) (Notes []*Note, err error) {
+	// Build base query
+	stmt := "SELECT * FROM notes"
+	args := []any{}
+
+	if !global {
+		stmt += " WHERE directory = ?"
+		dir, err := os.Getwd()
 		if err != nil {
-			fmt.Println("Unable to pull data from sql into note struct.", err)
 			return nil, err
 		}
-		defer rows.Close()
-	} else {
-		stmt += ";"
-		rows, err = m.DB.Query(stmt)
-		if err != nil {
-			fmt.Println("Unable to pull data from sql into note struct.", err)
-			return nil, err
-		}
-		defer rows.Close()
+		args = append(args, dir)
 	}
 
-	var note Note
+	if n > 0 {
+		stmt += " LIMIT ?"
+		args = append(args, n)
+	}
+
+	rows, err := m.DB.Query(stmt, args...)
+	if err != nil {
+		return nil, fmt.Errorf("unable to pull data from sql: %w", err)
+	}
+	defer rows.Close()
+
 	for rows.Next() {
+		note := &Note{}
 		err = rows.Scan(&note.ID, &note.Body, &note.Directory, &note.SavedAt)
 		if err != nil {
 			fmt.Println("Unable to pull data from sql into note struct.", err)
@@ -94,7 +98,7 @@ func (m *NoteModel) Delete(id int) error {
 }
 
 // this might become formatNote depending on how we integrate fuzzy finder.
-func DisplayNote(notes []Note) {
+func DisplayNote(notes []*Note) {
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 	fmt.Fprintln(w, "ID\tNote\tDirectory\tDate")
 	for _, note := range notes {

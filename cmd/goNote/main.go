@@ -22,8 +22,9 @@ type application struct {
 }
 
 type Opts struct {
-	List   int `short:"l" long:"list" description:"List out n number of notes. If n is not passed list all" optional:"true" optional-value:"-1"`
-	Delete int `short:"d" long:"delete" description:"Delete specific note based on ID field"`
+	List   int  `short:"l" long:"list" description:"List out n number of notes. If n is not passed list all" optional:"true" optional-value:"-1"`
+	Delete int  `short:"d" long:"delete" description:"Delete specific note based on ID field"`
+	Global bool `short:"g" long:"global" description:"Decide what notes to load, global or current directory notes." optional:"true" optional-value:"false"`
 }
 
 func main() {
@@ -80,10 +81,10 @@ func main() {
 		app.NoteModel.Delete(opts.Delete)
 	}
 
-	var notes []models.Note
+	var notes []*models.Note
 	// list notes if -l or if we just run goNote
 	if opts.List != 0 || myNote == "" {
-		notes, _ = app.NoteModel.List(opts.List)
+		notes, _ = app.NoteModel.List(opts.List, opts.Global)
 	}
 
 	if notes != nil {
