@@ -64,6 +64,10 @@ func main() {
 		app.NoteModel.Insert(myNote, wd)
 	}
 
+	if opts.Delete != 0 {
+		app.NoteModel.Delete(opts.Delete)
+	}
+
 	var notes []models.Note
 	// list notes if -l or if we just run goNote
 	if opts.List != 0 || myNote == "" {
@@ -73,11 +77,6 @@ func main() {
 	if notes != nil {
 		models.DisplayNote(notes)
 	}
-
-	if opts.Delete != 0 {
-		app.NoteModel.Delete(opts.Delete)
-	}
-
 }
 
 // The openDB() function wraps sql.Open() and returns a sql.DB connection pool
