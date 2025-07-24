@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"database/sql"
@@ -34,10 +35,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = godotenv.Load()
+	cwd, err := os.Getwd()
 	if err != nil {
-		log.Printf("Unable to load env file.")
+		log.Println("Unable to get cwd.", err)
 	}
+
+	fullPath := filepath.Join(cwd, ".env")
+
+	_, err = os.Stat(fullPath)
+	if !os.IsNotExist(err) {
+		err = godotenv.Load()
+		if err != nil {
+			log.Printf("Unable to load env file.")
+		}
+	}
+
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	dsn := os.Getenv("dsn")
