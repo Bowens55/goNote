@@ -74,6 +74,10 @@ func main() {
 		models.DisplayNote(notes)
 	}
 
+	if opts.Delete != 0 {
+		app.NoteModel.Delete(opts.Delete)
+	}
+
 }
 
 // The openDB() function wraps sql.Open() and returns a sql.DB connection pool

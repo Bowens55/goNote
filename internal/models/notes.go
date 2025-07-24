@@ -85,7 +85,7 @@ func (m *NoteModel) List(n int) (Notes []Note, err error) {
 }
 
 func (m *NoteModel) Delete(id int) error {
-	stmt := "DELETE FROM note WHERE id = ?;"
+	stmt := "DELETE FROM notes WHERE id = ?;"
 	_, err := m.DB.Exec(stmt, id)
 	if err != nil {
 		return err
