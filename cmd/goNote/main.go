@@ -26,12 +26,13 @@ type Opts struct {
 	Global bool `short:"g" long:"global" description:"Decide what notes to load, global or current directory notes." optional:"true" optional-value:"false"`
 }
 
-func getArgs() (args []string, opts Opts, err error) {
-	args, err = flags.Parse(&opts)
+func getArgs() (args []string, opts *Opts, err error) {
+	opts = &Opts{}                // Create pointer to new EMPTY struct. Otherwise, the var declared in the sig is just nil (pointer to struct == nil)
+	args, err = flags.Parse(opts) // Pass the pointer directly, cannot pass nil here so we need to create the struct above.
 	if err != nil {
-		return nil, opts, err
+		return nil, nil, err
 	}
-	return args, opts, nil
+	return
 }
 
 func main() {
