@@ -54,22 +54,23 @@ func (m *NoteModel) Insert(body, directory string) (int, error) {
 func (m *NoteModel) List(n int, global bool) (Notes []*Note, err error) {
 	// Build base query
 	stmt := "SELECT * FROM notes"
-	args := []any{}
+	args := []any{} // Empty list that can hold values of any type (strings, numbers, booleans, etc.)
 
 	if !global {
-		stmt += " WHERE directory = ?"
-		dir, err := os.Getwd()
+		stmt += " WHERE directory = ?" // SQL becomes: "SELECT * FROM notes WHERE directory = ?"
+		dir, err := os.Getwd()         // Get current folder path (like "/home/user/projects")
 		if err != nil {
 			return nil, err
 		}
-		args = append(args, dir)
+		args = append(args, dir) // Add that path to our list - Now args = ["/home/user/projects"]
 	}
 
 	if n > 0 {
-		stmt += " LIMIT ?"
-		args = append(args, n)
+		stmt += " LIMIT ?"     // SQL becomes: "SELECT * FROM notes WHERE directory = ? LIMIT ?"
+		args = append(args, n) // Add the number to our list - Now args = ["/home/user/projects", 5]
 	}
 
+	// The args... spreads out the list, so Query("SELECT * FROM notes WHERE directory = ? LIMIT ?", "/home/user/projects", 5)
 	rows, err := m.DB.Query(stmt, args...)
 	if err != nil {
 		return nil, fmt.Errorf("unable to pull data from sql: %w", err)
@@ -77,7 +78,7 @@ func (m *NoteModel) List(n int, global bool) (Notes []*Note, err error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		note := &Note{}
+		note := &Note{} // Create NEW instance each iteration to avoid same pointer issue
 		err = rows.Scan(&note.ID, &note.Body, &note.Directory, &note.SavedAt)
 		if err != nil {
 			fmt.Println("Unable to pull data from sql into note struct.", err)
