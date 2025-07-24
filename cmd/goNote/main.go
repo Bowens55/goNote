@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"goNote/internal/models"
 	"log"
 	"log/slog"
@@ -27,12 +26,19 @@ type Opts struct {
 	Global bool `short:"g" long:"global" description:"Decide what notes to load, global or current directory notes." optional:"true" optional-value:"false"`
 }
 
-func main() {
-	var opts Opts
-
-	args, err := flags.Parse(&opts)
+func getArgs() (args []string, opts Opts, err error) {
+	args, err = flags.Parse(&opts)
 	if err != nil {
-		fmt.Println("unable to parse flags.")
+		return nil, opts, err
+	}
+	return args, opts, nil
+}
+
+func main() {
+
+	args, opts, err := getArgs()
+	if err != nil {
+		log.Println("Unable to parse args.", err)
 		os.Exit(1)
 	}
 
