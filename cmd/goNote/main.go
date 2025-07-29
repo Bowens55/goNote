@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"goNote/internal/models"
 	"log"
 	"log/slog"
@@ -35,6 +36,18 @@ func getArgs() (args []string, opts *Opts, err error) {
 	return
 }
 
+func EnvFileExists(dir string) (bool, error) {
+	fullPath := filepath.Join(dir, ".env")
+	_, err := os.Stat(fullPath)
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func main() {
 
 	args, opts, err := getArgs()
@@ -45,28 +58,35 @@ func main() {
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Println("Unable to get cwd.", err)
+		slog.Error("Unable to get cwd.", "error", err)
 	}
 
-	fullPath := filepath.Join(cwd, ".env")
+	exists, err := EnvFileExists(cwd)
+	if err != nil {
+		slog.Error("Unable to check current directory for a .env file.")
+	}
 
-	_, err = os.Stat(fullPath)
-	if !os.IsNotExist(err) {
+	if exists {
 		err = godotenv.Load()
 		if err != nil {
 			log.Printf("Unable to load env file.")
 		}
 	}
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-
 	dsn := os.Getenv("dsn")
+	if dsn == "" {
+		slog.Error("DSN value cannot be empty, set env var. Or create a .env file in the current dir.", "dsn", dsn)
+		os.Exit(1)
+	}
+
 	db, err := openDB(dsn)
 	if err != nil {
-		logger.Error(err.Error())
+		slog.Error("Unable to open connection to DB.", "error", err, "dsn", dsn)
 		os.Exit(1)
 	}
 	defer db.Close()
+
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	app := application{
 		logger:    logger,
@@ -78,7 +98,7 @@ func main() {
 	if myNote != "" {
 		wd, err := os.Getwd()
 		if err != nil {
-			logger.Error("Unable to get working dir.", "error", err)
+			app.logger.Error("Unable to get working dir.", "error", err)
 			os.Exit(1)
 		}
 		app.NoteModel.Insert(myNote, wd)
