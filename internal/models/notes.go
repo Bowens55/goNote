@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bufio"
 	"database/sql"
 	"fmt"
 	"os"
@@ -95,6 +96,28 @@ func (m *NoteModel) Delete(id int) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+// UPDATE your_table_name
+// SET body = 'New content', directory = '/new/path'
+// WHERE id = 2;
+
+func (m *NoteModel) Edit(id int) error {
+	fmt.Print("New note content: ")
+
+	scanner := bufio.NewScanner(os.Stdin)
+	if !scanner.Scan() {
+		return fmt.Errorf("failed to read input")
+	}
+	userInput := scanner.Text()
+
+	stmt := "UPDATE notes SET body = ?, saved_at = ? WHERE ID = ?"
+	_, err := m.DB.Exec(stmt, userInput, time.Now(), id)
+	if err != nil {
+		return fmt.Errorf("failed to update note: %w", err)
+	}
+
 	return nil
 }
 

@@ -25,6 +25,7 @@ type Opts struct {
 	List   int  `short:"l" long:"list" description:"List out n number of notes. If n is not passed list all" optional:"true" optional-value:"-1"`
 	Delete int  `short:"d" long:"delete" description:"Delete specific note based on ID field"`
 	Global bool `short:"g" long:"global" description:"Decide what notes to load, global or current directory notes." optional:"true" optional-value:"false"`
+	Edit   int  `short:"e" long:"edit" description:"Edit a specific note based on the ID passed." optional:"true" optional-value:"0"`
 }
 
 func getArgs() (args []string, opts *Opts, err error) {
@@ -108,6 +109,14 @@ func main() {
 		app.NoteModel.Delete(opts.Delete)
 	}
 
+	if opts.Edit != 0 {
+		err = app.NoteModel.Edit(opts.Edit)
+		if err != nil {
+			app.logger.Error("Unable to edit note", "error", err, "id", opts.Edit)
+		}
+	}
+
+	// list at the very end, any new commands need to be before this point!
 	var notes []*models.Note
 	// list notes if -l or if we just run goNote
 	if opts.List != 0 || myNote == "" {
