@@ -27,6 +27,7 @@ type Notes struct {
 }
 
 // create the table if not exists
+// return the db, well technically the notes struct that contains db and sync mutex
 func NewNotes() (*Notes, error) {
 	os.MkdirAll("./.notesdb", 0755)
 	db, err := sql.Open("sqlite3", file)
@@ -42,6 +43,7 @@ func NewNotes() (*Notes, error) {
 	}, nil
 }
 
+// TODO: make it grab current dir
 func createNote(note string, db *sql.DB) error {
 	stmt := `INSERT INTO notes(note, directory, time) VALUES(?, ?, datetime('now'))`
 	_, err := db.Exec(stmt, note, "sample/directory")
@@ -52,7 +54,6 @@ func createNote(note string, db *sql.DB) error {
 }
 
 func main() {
-	fmt.Println("hello world")
 
 	notes, err := NewNotes()
 	if err != nil {
