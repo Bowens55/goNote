@@ -46,3 +46,5 @@ Icon?
 *.sw*
 .env
 *.env
+*/.notesdb/*
+.notesdb/db
