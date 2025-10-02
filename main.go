@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"os"
 	"sync"
@@ -43,17 +44,34 @@ func NewNotes() (*Notes, error) {
 	}, nil
 }
 
-// TODO: make it grab current dir
 func createNote(note string, db *sql.DB) error {
+	currentDir, err := os.Getwd()
 	stmt := `INSERT INTO notes(note, directory, time) VALUES(?, ?, datetime('now'))`
-	_, err := db.Exec(stmt, note, "sample/directory")
+	_, err = db.Exec(stmt, note, currentDir)
 	if err != nil {
 		return fmt.Errorf("failed to insert note: %v", err)
 	}
 	return nil
 }
 
+// func listNote() {
+
+// }
+
+// delete note by ID
+func deleteNote(id int, db *sql.DB) (int64, error) {
+	sql := `DELETE FROM notes WHERE id = ?`
+	result, err := db.Exec(sql, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 func main() {
+
+	createPtr := flag.String("create", "", "The note to create.")
+	flag.Parse()
 
 	notes, err := NewNotes()
 	if err != nil {
@@ -62,9 +80,11 @@ func main() {
 	}
 	defer notes.db.Close()
 
-	if err := createNote("sample", notes.db); err != nil {
-		fmt.Printf("Failed to create note: %v\n", err)
-		return
+	if *createPtr != "" {
+		if err := createNote(*createPtr, notes.db); err != nil {
+			fmt.Printf("Failed to create note: %v\n", err)
+			return
+		}
 	}
 
 	rows, err := notes.db.Query("SELECT * FROM notes")
@@ -73,6 +93,11 @@ func main() {
 		return
 	}
 	defer rows.Close()
+
+	// _, err = deleteNote(7, notes.db)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
 	for rows.Next() {
 		var id int
